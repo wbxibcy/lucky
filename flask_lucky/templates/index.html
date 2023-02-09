@@ -1,0 +1,280 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>在线抽奖</title>
+    <script src="https://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
+    <style>
+        body {
+            background-color: aliceblue;
+        }
+
+        .wrapDiv {
+            width: 80%;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+            position: absolute;
+            top: 80px;
+            left: 0;
+            right: 0;
+        }
+
+        .leftBox {
+            float: left;
+            width: 800px;
+            height: 240px;
+            /*background-color:aqua;
+	*/
+            margin: 0 auto;
+            margin-top: 0px;
+            clear: both;
+        }
+
+        #span {
+            float: right;
+            top: 30px;
+            right: 185px;
+        }
+
+        #btn {
+            float: left;
+            width: 100px;
+            height: 30px;
+            margin-left: 10px;
+            margin-top: 150px;
+        }
+
+        .nameBox {
+            width: 100px;
+            height: 30px;
+            float: left;
+            background-color: antiquewhite;
+            margin-left: 10px;
+            margin-top: 10px;
+            text-align: center;
+            line-height: 30px;
+        }
+
+        .selectedName {
+            float: right;
+            width: 340px;
+            background: #666;
+            margin-top: 10px;
+            margin-left: 30px;
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        h1 {
+            text-align: center;
+        }
+    
+        /* .mytxt {
+            color:#333;
+            line-height:normal;
+            font-family:"Microsoft YaHei",Tahoma,Verdana,SimSun;
+            font-style:normal;
+            font-variant:normal;
+            font-size-adjust:none;
+            font-stretch:normal;
+            font-weight:normal;
+            margin-top:0px;
+            margin-bottom:0px;
+            margin-left:0px;
+            padding-top:4px;
+            padding-right:4px;
+            padding-bottom:4px;
+            padding-left:4px;
+            font-size:15px;
+            outline-width:medium;
+            outline-style:none;
+            outline-color:invert;
+            border-top-left-radius:3px;
+            border-top-right-radius:3px;
+            border-bottom-left-radius:3px;
+            border-bottom-right-radius:3px;
+            text-shadow:0px 1px 2px #fff;
+            background-attachment:scroll;
+            background-repeat:repeat-x;
+            background-position-x:left;
+            background-position-y:top;
+            background-size:auto;
+            background-origin:padding-box;
+            background-clip:border-box;
+            background-color:rgb(255,255,255);
+            margin-right:8px;
+            border-top-color:#ccc;
+            border-right-color:#ccc;
+            border-bottom-color:#ccc;
+            border-left-color:#ccc;
+            border-top-width:1px;
+            border-right-width:1px;
+            border-bottom-width:1px;
+            border-left-width:1px;
+            border-top-style:solid;
+            border-right-style:solid;
+            border-bottom-style:solid;
+            border-left-style:solid;
+        } */
+    
+    </style>
+</head>
+
+<body>
+    <h1>随机抽奖系统</h1>
+    <span id="span"></span>
+
+    <div class="wrapDiv">
+        <div id="leftBox" class="leftBox"></div>
+        <div id="selectedName" class="selectedName">
+            <h1>中奖者名单</h1>
+        </div>
+
+        <input type="button" id="btn" value="走起">
+    </div>
+
+    <script>
+        var arr;
+        console.log(arr);
+        var orgArrCount = 0;
+        var currentSelectNum = 0;           
+         console.log("here")
+
+        const dataurl = 'http://192.168.0.108:8080/data';
+        fetch(dataurl)	
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            // console.log(data.data);
+            let res = Object.values(data.data);
+            arr = res;
+            orgArrCount = arr.length;
+            initForm();
+        });
+
+        function getResult(){
+            const resultUrl = 'http://192.168.0.108:8080/lucky';
+            fetch(resultUrl)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // console.log(data.result)
+                // currentSelectNum = data.result;
+                console.log(data.result);
+                console.log(arr.indexOf(data.result));
+                currentSelectNum = arr.indexOf(data.result);
+                clearBoxColor();
+                setBoxColor();
+                // 添加选中人
+                appendSelectedName();
+                // 移除
+                arr.splice(currentSelectNum, 1);
+            })
+        }
+
+        // 初始化表单
+        function initForm() {
+            // getAttribute();
+            // 动态设置选择人的高度
+
+            var selectedNameHeight = orgArrCount / 3 * 40 + 120;
+            $("#selectedName").css("height", selectedNameHeight + "px");
+            // 动态创建图层
+            dynamicCreateBox();
+        }
+
+        // 动态创建层
+        function dynamicCreateBox() {
+            for (var i = 0; i < arr.length; i++) {
+                var div = document.createElement("div");
+                div.innerText = arr[i];
+                div.className = "nameBox";
+                $("#leftBox").append(div);
+            };
+        }
+
+        // 清空小方格颜色
+        function clearBoxColor() {
+            $("#leftBox").children("div").each(function () {
+                $(this).css("background-color", "");
+            });
+        }
+
+        // 设置选中小方格颜色
+        function setBoxColor() {
+            $("#leftBox").children("div").each(function () {
+                var thisText = ($(this).text());
+                var selectedName = arr[currentSelectNum];
+
+                if (thisText == selectedName) {
+                    $(this).css("background-color", "red");
+                }
+            });
+        }
+
+        function appendSelectedName() {
+            var div = document.createElement("div");
+            div.innerText = arr[currentSelectNum];
+            div.className = "nameBox";
+            $("#selectedName").append(div);
+        }
+
+        $('#btn').click(function () {
+            var curentCount = arr.length;
+            if (curentCount < 1) {
+                alert("没有可选人了");
+                // 清空所有层的颜色
+                clearBoxColor();
+                return;
+            }
+            // 监视按钮的状态
+            if (this.value === "走起") {
+                // 定时针
+                timeId = setInterval(function () {
+                    // 清空所有层的颜色
+                    clearBoxColor();
+
+                    //随机生成一个数
+                    var num = Math.floor(Math.random() * curentCount);
+                    currentSelectNum = num;
+                    // console.log(currentSelectNum);
+                    // 设置选中小方格颜色
+                    setBoxColor();
+                }, 10);
+                
+                this.value = "停止";
+            } else {
+                // 清除计时器
+                clearInterval(timeId);
+                getResult();
+
+                this.value = "走起";
+            }
+        });
+
+        // 获取时间的函数
+        getTime();
+        setInterval(getTime, 10)
+
+        function getTime() {
+            var day = new Date();
+            var year = day.getFullYear(); //年
+            var month = day.getMonth() + 1; //月
+            var dat = day.getDate(); //日
+            var hour = day.getHours(); //小时
+            var minitue = day.getMinutes(); //分钟
+            var second = day.getSeconds(); //秒
+            month = month < 10 ? "0" + month : month;
+            dat = dat < 10 ? "0" + dat : dat;
+            hour = hour < 10 ? "0" + hour : hour;
+            minitue = minitue < 10 ? "0" + minitue : minitue;
+            second = second < 10 ? "0" + second : second;
+            $("#span").innerText = year + "-" + month + "-" + dat + " " + hour + ":" + minitue + ":" + second
+        }
+    </script>
+
+</body>
+
+</html>
